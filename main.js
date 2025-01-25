@@ -1,6 +1,7 @@
 let color = document.getElementById('color');
 let createBtn = document.getElementById('createBtn');
 let list = document.getElementById('notes');
+let zIndexCounter = 1;
 
 // Load notes from localStorage on page load
 window.onload = () => {
@@ -20,15 +21,16 @@ const saveNotes = () => {
             position: {
                 top: note.style.top,
                 left: note.style.left
-            }
+            },
+            zIndex: note.style.zIndex
         });
     });
     localStorage.setItem('stickyNotes', JSON.stringify(allNotes));
 };
 
 // Add a new note to the DOM
-const addNoteToDOM = (noteData = { content: '', color: '#e6b905', position: {} }) => {
-    const { content = '', color = '#e6b905', position = {} } = noteData;
+const addNoteToDOM = (noteData = { content: '', color: '#e6b905', position: {}, zIndex: 1 }) => {
+    const { content = '', color = '#e6b905', position = {}, zIndex = 1 } = noteData;
     const { top = '60px', left = '50px' } = position;
 
     let newNote = document.createElement('div');
@@ -41,14 +43,22 @@ const addNoteToDOM = (noteData = { content: '', color: '#e6b905', position: {} }
     newNote.style.borderColor = color;
     newNote.style.top = top;
     newNote.style.left = left;
+    newNote.style.zIndex = zIndex;
     list.appendChild(newNote);
     saveNotes();
-};
 
+    // Add click listener to bring the note to the top
+    newNote.addEventListener('mousedown', () => {
+        zIndexCounter++;
+        newNote.style.zIndex = zIndexCounter;
+        saveNotes();
+    });
+};
 
 // Create a new note when the button is clicked
 createBtn.onclick = () => {
-    addNoteToDOM({ color: color.value });
+    zIndexCounter++;
+    addNoteToDOM({ color: color.value, zIndex: zIndexCounter });
 };
 
 // Remove a note
@@ -74,6 +84,11 @@ document.addEventListener('mousedown', event => {
             x: event.target.getBoundingClientRect().left,
             y: event.target.getBoundingClientRect().top
         };
+
+        // Bring the clicked note to the top
+        zIndexCounter++;
+        note.dom.style.zIndex = zIndexCounter;
+        saveNotes();
     }
 });
 
